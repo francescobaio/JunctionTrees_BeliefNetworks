@@ -2,6 +2,9 @@
 Repository per Elaborato esame Intelligenza Artificiale . \\
 Argomento : Inferenza con Junction Trees sui Belief Networks
 
+BRANCH Main : Informazioni sul dataset usato , come graficare , Relazione descrittiva del codice.
+       Master : Modulo Software : Inference.py -> contiene le classi Junction Tree e Belief Network , i metodi per l'inferenza probabilistica (presenti bug e fix me)
+                                  Main.py -> utilizzo del software di inferenza
 
 Questo repository contiene un modulo software utile alla propagazione dell'informazione all'interno delle Belief Networks.
 L'algoritmo di propagazione usa l'idea dello scambio di messaggi nel Junction Tree associato alla Belief Network stessa costruito manualmente e già fornito 
