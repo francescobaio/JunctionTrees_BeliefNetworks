@@ -45,23 +45,23 @@ class JunctionTree:
         # Edges è la liste degli archi del Jt , questi sono delle triplette (cluster,separatore,cluster)
         self.edges = egdes
         for i in range(len(self.clusters)):
-            self.CPTc[self.clusters[i]] = np.zeros(2 ** len(self.clusters[i]) + 1, len(self.clusters[i]) + 1)
+            self.CPTc[self.clusters[i]] = np.zeros((2 ** len(self.clusters[i]) + 1, len(self.clusters[i]) + 1))
             for j in range(len(self.clusters[i])):
                 self.CPTc[self.clusters[i]][0][j] = beliefNetwork.variables[self.clusters[i][j]]
             for k in range(2 ** len(self.clusters[i])):
                 quoziente = k
                 # parto dal termine della matrice si prende l'indice della riga e si fa modulo 2 .
-                for t in range(len(self.clusters[i]), -1, -1):
+                for t in range(len(self.clusters[i]) - 1, -1, -1):
                     self.CPTc[self.clusters[i]][k + 1][t] = quoziente % 2
                     quoziente = math.floor(quoziente / 2)
 
         for i in range(len(self.separators)):
-            self.CPTs[self.separators[i]] = np.zeros(2 ** len(self.separators[i]) + 1, len(self.separators[i]) + 1)
+            self.CPTs[self.separators[i]] = np.zeros((2 ** len(self.separators[i]) + 1, len(self.separators[i]) + 1))
             for j in range(len(self.separators[i])):
                 self.CPTs[self.separators[i]][0][j] = beliefNetwork.variables[self.separators[i][j]]
             for k in range(2 ** len(self.separators[i])):
                 quoziente = k
-                for t in range(len(self.separators[i]), -1, -1):
+                for t in range(len(self.separators[i]) - 1, -1, -1):
                     self.CPTs[self.separators[i]][k + 1][t] = quoziente % 2
                     quoziente = math.floor(quoziente / 2)
 
@@ -192,7 +192,7 @@ class JunctionTree:
 
         #  Fix this
 
-        def collect_evidence(self, root):
+        # def collect_evidence(self, root):
     # chiama la distribute una volta che dalle foglie è ritornato alla root
 
     #  Fix me

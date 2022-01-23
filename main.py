@@ -45,3 +45,9 @@ Jt2 = I.JunctionTree(["AB", "BC"], ["B"], ["AB", "B", "BC"], simple)
 # Esempi relativi all'uso della definizione di probabilità condizionale
 
 # Calcolo della probabilità congiuntà tramite la def. di questa per una Belief NetWork
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+for i in range(len(Jt1.separators)):
+    print(Jt1.CPTs[Jt1.separators[i]])
