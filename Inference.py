@@ -264,3 +264,13 @@ class JunctionTree:
                             self.absorption(self.CPTc[self.edges[j][0]], self.CPTc[self.edges[j][1]],
                                             self.CPTc[self.CPTc[list[i]]])
                             list[i] = self.edges[j][0]
+
+    def find_egdes(self, node):
+
+        list = []
+
+        for i in range(len(self.edges)):
+            if node in self.edges[i]:
+                list.append(self.egdes[i])
+
+        return list
