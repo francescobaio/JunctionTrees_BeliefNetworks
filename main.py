@@ -20,17 +20,17 @@ if __name__ == '__main__':
 
 # Memorizzo la rete del file .bn , abrrevio il nome dei nodi alla iniziale
 
-bde = I.BeliefNetwork(["B", "E", "A", "J", "M"], [("B", []), ("E", []), ("A", [("E", "B")]), ("J", ["A"]),
-                                                  ("M", ["A"])], [("B", [0.99, 0.01]), ("E", [0.98, 0.02]),
-                                                                  ("A",
-                                                                   [0.999, 0.001, 0.71, 0.29, 0.06, 0.94, 0.05, 0.95]),
-                                                                  ("J", [0.95, 0.05, 0.1, 0.9]),
-                                                                  ("M", [0.99, 0.01, 0.3, 0.7])])
+bde = I.BeliefNetwork(["B", "E", "A", "J", "M"], {"B": [], "E": [], "A": ["E", "B"], "J": ["A"],
+                                                  "M": ["A"]}, {"B": [0.99, 0.01], "E": [0.98, 0.02],
+                                                                "A":
+                                                                    [0.999, 0.001, 0.71, 0.29, 0.06, 0.94, 0.05, 0.95],
+                                                                "J": [0.95, 0.05, 0.1, 0.9],
+                                                                "M": [0.99, 0.01, 0.3, 0.7]})
 
 # Memorizzo la rete simple.bn
 
-simple = I.BeliefNetwork(["A", "B", "C"], [("A", []), ("B", "A"), ("C", [])],
-                         [("A", [0.3, 0.7]), ("B", [0.4, 0.6, 0.1, 0.9]), ("C", [0.4, 0.6, 0.1, 0.9])])
+simple = I.BeliefNetwork(["A", "B", "C"], {"A": [], "B": ["A"], "C": []},
+                         {"A": [0.3, 0.7], "B": [0.4, 0.6, 0.1, 0.9], "C": [0.4, 0.6, 0.1, 0.9]})
 
 # Memorizzo il Junction Tree del file bde_test.bn , https://github.com/francescobaio/Elaborato_AI/blob/main/JunctionTree%20EarthQuake.bn.png
 
@@ -49,5 +49,51 @@ Jt2 = I.JunctionTree(["AB", "BC"], ["B"], ["AB", "B", "BC"], simple)
 for i in range(len(Jt1.clusters)):
     print(Jt1.CPTc[Jt1.clusters[i]])
 
+print("____")
+
+for i in range(len(bde.nodes)):
+    print(bde.cpt[bde.nodes[i]])
+
+print("____")
+
+print(Jt1.CPTc["AJ"])
+
+print("____")
+
+Jt1.inizialization()
+
+print(Jt1.CPTc["AJ"])
+
+print("_____")
+
+Jt1.product(Jt1.CPTc["AJ"], Jt1.CPTc["AM"])
+
+print(Jt1.CPTc["AJ"])
+
+print("____")
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+print("_____")
+
 for i in range(len(Jt1.separators)):
     print(Jt1.CPTs[Jt1.separators[i]])
+
+print("-----")
+
+Jt1.absorption(Jt1.CPTc["AJ"], Jt1.CPTs["A"], Jt1.CPTc["AM"])
+
+print(Jt1.CPTc["AJ"])
+print(Jt1.CPTc["AM"])
+print(Jt1.CPTs["A"])
+
+print("_____")
+
+bde.joint_probability()
+print(bde.joint_p)
+
+print("_____")
+
+# list = Jt1.find_leafs("AJ")
+# xprint(list)
