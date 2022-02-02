@@ -95,5 +95,32 @@ print(bde.joint_p)
 
 print("_____")
 
-# list = Jt1.find_leafs("AJ")
-# xprint(list)
+list = Jt1.find_leafs("AJ")
+print(list)
+
+print("_____")
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+print("_____")
+
+Jt1.CPTc["AJ"][2][2] = 0
+Jt1.CPTc["AJ"][4][2] = 0
+
+Jt1.distribute_evidence("AJ")
+
+print("_____")
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+print("_____")
+
+Jt1.collect_evidence("AJ")
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+# t = bde.joint_probability()
+# print(t)
