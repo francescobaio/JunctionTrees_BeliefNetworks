@@ -63,8 +63,6 @@ print("____")
 Jt1.inizialization()
 
 
-print(Jt1.CPTc["AJ"])
-
 print("____")
 
 for i in range(len(Jt1.clusters)):
@@ -112,14 +110,16 @@ for i in range(len(Jt1.clusters)):
 
 print("_____")
 
-cpt = bde.marginalize("A", ["B", "J"])
+Jt1.distribute_evidence("AJ")
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+cpt = bde.marginalize("A", ["J"])
 print(cpt)
 
-ncpt = bde.normalize("A", ["E", "B"])
-print(ncpt)
-# Jt1.distribute_evidence("AJ")
+# cpt2 = bde.marginalize("J",["A"])
+# print(cpt2)
 
-# for i in range(len(Jt1.clusters)):
-#   print(Jt1.CPTc[Jt1.clusters[i]])
 
 # print("_____")

@@ -4,7 +4,6 @@ import random
 
 import numpy as np
 import python_algorithms.basic.union_find as uf
-from numpy import inf
 import decimal
 
 
@@ -18,7 +17,8 @@ class BeliefNetwork:
         # Variables è un dizionario che associa a una variabile(chiave) un valore intero
         self.variables = {}
 
-        self.joint_p = np.zeros((2 ** len(self.nodes) + 1, len(self.nodes) + 1))
+        dt = decimal.Decimal
+        self.joint_p = np.zeros((2 ** len(self.nodes) + 1, len(self.nodes) + 1), dtype=dt)
 
         for i in range(len(self.nodes)):
             self.variables[nodes[i]] = i + 1
@@ -26,7 +26,7 @@ class BeliefNetwork:
         for i in range(len(self.nodes)):
             CPT = self.cpt[self.nodes[i]].copy()
             self.cpt[self.nodes[i]] = np.zeros(
-                ((2 ** ((len(self.parents[self.nodes[i]])) + 1)) + 1, (len(self.parents[self.nodes[i]])) + 2))
+                ((2 ** ((len(self.parents[self.nodes[i]])) + 1)) + 1, (len(self.parents[self.nodes[i]])) + 2), dtype=dt)
             self.cpt[self.nodes[i]][0][0] = self.variables[self.nodes[i]]
             for j in range(len(self.parents[self.nodes[i]])):
                 self.cpt[self.nodes[i]][0][j + 1] = self.variables[self.parents[self.nodes[i]][j]]
@@ -41,6 +41,8 @@ class BeliefNetwork:
                 self.cpt[self.nodes[i]][p + 1][(len(self.parents[self.nodes[i]])) + 1] = CPT[p]
 
     def joint_probability(self):
+        decimal.getcontext().prec = 28
+
         for j in range(len(self.nodes)):
             self.joint_p[0][j] = self.variables[self.nodes[j]]
         for k in range(2 ** len(self.nodes)):
@@ -54,11 +56,17 @@ class BeliefNetwork:
         for i in range(len(self.nodes)):
             JunctionTree.product(self, self.joint_p, self.cpt[self.nodes[i]])
 
-    # sum = 0
-    # for j in range(2 ** len(self.nodes)):
-    #   sum += self.joint_p[j + 1][len(self.nodes)]
+        sum = 0
+        for j in range(2 ** len(self.nodes)):
+            sum += self.joint_p[j + 1][len(self.nodes)]
 
-    # return sum
+        for i in range(self.joint_p.shape[0] - 1):
+            self.joint_p[i + 1][-1] /= sum
+
+        somma = 0
+        for j in range(2 ** len(self.nodes)):
+            somma += self.joint_p[j + 1][len(self.nodes)]
+        return somma
 
     def marginalize(self, variable, evidence):
 
@@ -66,7 +74,8 @@ class BeliefNetwork:
         list = []
         found = True
         check = True
-        cpt = np.zeros(((2 ** (len(evidence) + 1)) + 1, len(evidence) + 2))
+        dt = decimal.Decimal
+        cpt = np.zeros(((2 ** (len(evidence) + 1)) + 1, len(evidence) + 2), dtype=dt)
 
         cpt[0][0] = self.variables[variable]
         for j in range(cpt.shape[1] - 2):
@@ -88,7 +97,7 @@ class BeliefNetwork:
             for i in range(copy_jpt.shape[0] - 2):
                 for y in range(cpt.shape[0] - 1):
                     for x in range(len(list)):
-                        if copy_jpt[i + 1][list[x][0]] != cpt[y + 1][list[x][1]]:
+                        if ((cpt[y + 1][-1] != 0) or (copy_jpt[i + 1][list[x][0]] != cpt[y + 1][list[x][1]])):
                             check = False
                     if check == True:
                         cpt[y + 1][cpt.shape[1] - 1] += copy_jpt[i + 1][copy_jpt.shape[1] - 1]
@@ -115,6 +124,10 @@ class BeliefNetwork:
                                 check = True
                     else:
                         found = True
+
+        cpt_norm = self.normalize(variable, evidence)
+        JunctionTree.division(self, cpt, cpt_norm)
+        return cpt
 
     def normalize(self, variable, evidence):
 
@@ -172,6 +185,8 @@ class BeliefNetwork:
                     else:
                         found = True
 
+        return cpt_norm
+
 
 class JunctionTree:
     def __init__(self, clusters, separators, egdes, beliefNetwork):
@@ -179,7 +194,9 @@ class JunctionTree:
         self.clusters = clusters
         self.separators = separators
         self.beliefNetwork = beliefNetwork
-        decimal.getcontext().prec = 15
+        decimal.getcontext().prec = 28
+        dt = decimal.Decimal
+
         # CPTs e CPTc sono due dizionari che associano rispettivamente la stringa corrispondente al separatore/cluster
         # alla sua CPT
         self.CPTs = {}
@@ -187,7 +204,8 @@ class JunctionTree:
         # Edges è la liste degli archi del Jt , questi sono delle triplette (cluster,separatore,cluster)
         self.edges = egdes
         for i in range(len(self.clusters)):
-            self.CPTc[self.clusters[i]] = np.zeros((2 ** len(self.clusters[i]) + 1, len(self.clusters[i]) + 1))
+            self.CPTc[self.clusters[i]] = np.zeros((2 ** len(self.clusters[i]) + 1, len(self.clusters[i]) + 1),
+                                                   dtype=dt)
             for j in range(len(self.clusters[i])):
                 self.CPTc[self.clusters[i]][0][j] = beliefNetwork.variables[self.clusters[i][j]]
             for k in range(2 ** len(self.clusters[i])):
@@ -236,8 +254,12 @@ class JunctionTree:
                         found = True
 
         for i in range(len(self.clusters)):
+            sum = 0
             for j in range(2 ** len(self.clusters[i])):
-                self.CPTc[self.clusters[i]][j + 1][-1] /= (len(self.clusters[i]))
+                sum += self.CPTc[self.clusters[i]][j + 1][-1]
+
+            for k in range(2 ** len(self.clusters[i])):
+                self.CPTc[self.clusters[i]][k + 1][-1] /= sum
 
     def product(self, tv, ts):
         # Trovo le colonne delle variabili in comune tra i due cluster
@@ -278,9 +300,8 @@ class JunctionTree:
                     if tv[k + 1][list[t][0]] != ts[y + 1][list[t][1]]:
                         found = False
                 if found == True:
-                    if (tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]) != inf:
-                        if round(tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]) != 0:
-                            tv[k + 1][tv.shape[1] - 1] = tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]
+                    if ts[y + 1][ts.shape[1] - 1] != 0:
+                        tv[k + 1][tv.shape[1] - 1] = tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]
                 else:
                     found = True
 
@@ -300,6 +321,15 @@ class JunctionTree:
         while sets.count() > ts.shape[0] - 1:
             # itero prendendo una riga della tabella e tutte le successive sulle variabili(colonne) in comune
             for i in range(tv.shape[0] - 2):
+                for y in range(ts.shape[0] - 1):
+                    for x in range(len(list)):
+                        if ((tv[y + 1][-1] != 0) or (tv[i + 1][list[x][0]] != ts[y + 1][list[x][1]])):
+                            check = False
+                    if check == True:
+                        ts[y + 1][ts.shape[1] - 1] = tv[i + 1][tv.shape[1] - 1]
+                    else:
+                        check = True
+
                 for j in range(i + 2, tv.shape[0]):
                     for k in range(len(list)):
                         if tv[i + 1][list[k][0]] != tv[j][list[k][0]]:
@@ -315,7 +345,7 @@ class JunctionTree:
                                 if tv[i + 1][list[x][0]] != ts[y + 1][list[x][1]]:
                                     check = False
                             if check == True:
-                                ts[y + 1][ts.shape[1] - 1] = tv[i + 1][tv.shape[1] - 1] + tv[j][tv.shape[1] - 1]
+                                ts[y + 1][ts.shape[1] - 1] += tv[j][tv.shape[1] - 1]
                             else:
                                 check = True
                     else:
