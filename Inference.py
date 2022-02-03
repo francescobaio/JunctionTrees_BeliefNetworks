@@ -68,22 +68,36 @@ class BeliefNetwork:
             somma += self.joint_p[j + 1][len(self.nodes)]
         return somma
 
-    def marginalize(self, variable, evidence):
+    def calculate_cp(self, variable, evidence):
+
+        list = []
+        list.append(variable)
+
+        for i in range(len(evidence)):
+            list.append(evidence[i])
+
+        cpt = self.marginalize(list)
+        cpt_norm = self.marginalize(evidence)
+
+        JunctionTree.division(self, cpt, cpt_norm)
+
+        return cpt
+
+    def marginalize(self, variables):
 
         copy_jpt = self.joint_p.copy()
         list = []
         found = True
         check = True
         dt = decimal.Decimal
-        cpt = np.zeros(((2 ** (len(evidence) + 1)) + 1, len(evidence) + 2), dtype=dt)
+        cpt = np.zeros(((2 ** (len(variables))) + 1, len(variables) + 1), dtype=dt)
 
-        cpt[0][0] = self.variables[variable]
-        for j in range(cpt.shape[1] - 2):
-            cpt[0][j + 1] = self.variables[evidence[j]]
+        for j in range(cpt.shape[1] - 1):
+            cpt[0][j] = self.variables[variables[j]]
 
-        for k in range(2 ** (len(evidence) + 1)):
+        for k in range(2 ** (len(variables))):
             quoziente = k
-            for t in range(len(evidence), -1, -1):
+            for t in range(len(variables) - 1, -1, -1):
                 cpt[k + 1][t] = quoziente % 2
                 quoziente = math.floor(quoziente / 2)
 
@@ -93,7 +107,7 @@ class BeliefNetwork:
                     list.append((i, j))
 
         sets = uf.UF(copy_jpt.shape[0] - 1)
-        while sets.count() > ((2 ** (len(evidence) + 1))):
+        while sets.count() > (2 ** (len(variables))):
             for i in range(copy_jpt.shape[0] - 2):
                 for y in range(cpt.shape[0] - 1):
                     for x in range(len(list)):
@@ -124,69 +138,7 @@ class BeliefNetwork:
                                 check = True
                     else:
                         found = True
-
-        cpt_norm = self.normalize(variable, evidence)
-        JunctionTree.division(self, cpt, cpt_norm)
         return cpt
-
-    def normalize(self, variable, evidence):
-
-        copy_jpt2 = self.joint_p.copy()
-        cpt_norm = np.zeros(((2 ** len(evidence)) + 1, len(evidence) + 1))
-        check = True
-        found = True
-        list = []
-
-        for j in range(cpt_norm.shape[1] - 1):
-            cpt_norm[0][j] = self.variables[evidence[j]]
-
-        for k in range(2 ** len(evidence)):
-            quoziente = k
-            for t in range(len(evidence) - 1, -1, -1):
-                cpt_norm[k + 1][t] = quoziente % 2
-                quoziente = math.floor(quoziente / 2)
-
-        for i in range(copy_jpt2.shape[1] - 1):
-            for j in range(cpt_norm.shape[1] - 1):
-                if copy_jpt2[0][i] == cpt_norm[0][j]:
-                    list.append((i, j))
-
-        sets = uf.UF(copy_jpt2.shape[0] - 1)
-        while sets.count() > (2 ** (len(evidence))):
-            for i in range(copy_jpt2.shape[0] - 2):
-                for y in range(cpt_norm.shape[0] - 1):
-                    for x in range(len(list)):
-                        if ((cpt_norm[y + 1][-1] != 0) or (
-                                copy_jpt2[i + 1][list[x][0]] != cpt_norm[y + 1][list[x][1]])):
-                            check = False
-                    if check == True:
-                        cpt_norm[y + 1][cpt_norm.shape[1] - 1] += copy_jpt2[i + 1][copy_jpt2.shape[1] - 1]
-                    else:
-                        check = True
-
-                for j in range(i + 2, copy_jpt2.shape[0]):
-                    for k in range(len(list)):
-                        if copy_jpt2[i + 1][list[k][0]] != copy_jpt2[j][list[k][0]]:
-                            found = False
-                    # nel caso in cui ho trovato un riga valori uguali negli attributi
-                    # in comune con ts, verifico se non fa parte già del set con la funzione
-                    # connected
-                    # i sets partono da zero
-                    if found == True and not sets.connected(i, j - 1):
-                        sets.union(i, j - 1)
-                        for y in range(cpt_norm.shape[0] - 1):
-                            for x in range(len(list)):
-                                if copy_jpt2[i + 1][list[x][0]] != cpt_norm[y + 1][list[x][1]]:
-                                    check = False
-                            if check == True:
-                                cpt_norm[y + 1][cpt_norm.shape[1] - 1] += copy_jpt2[j][copy_jpt2.shape[1] - 1]
-                            else:
-                                check = True
-                    else:
-                        found = True
-
-        return cpt_norm
-
 
 class JunctionTree:
     def __init__(self, clusters, separators, egdes, beliefNetwork):
@@ -302,6 +254,8 @@ class JunctionTree:
                 if found == True:
                     if ts[y + 1][ts.shape[1] - 1] != 0:
                         tv[k + 1][tv.shape[1] - 1] = tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]
+                    else:
+                        tv[k + 1][tv.shape[1] - 1] = 0
                 else:
                     found = True
 

@@ -19,7 +19,7 @@ sum = simple.joint_probability()
 print(simple.joint_p)
 print(sum)
 
-cpt = simple.marginalize("B", ["A"])
+cpt = simple.calculate_cp("B", ["A"])
 print(cpt)
 
 """"

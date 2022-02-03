@@ -115,7 +115,9 @@ Jt1.distribute_evidence("AJ")
 for i in range(len(Jt1.clusters)):
     print(Jt1.CPTc[Jt1.clusters[i]])
 
-cpt = bde.marginalize("A", ["J"])
+print("_____")
+
+cpt = bde.calculate_cp("A", ["B", "J"])
 print(cpt)
 
 # cpt2 = bde.marginalize("J",["A"])
