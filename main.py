@@ -62,11 +62,6 @@ print("____")
 
 Jt1.inizialization()
 
-print(Jt1.CPTc["AJ"])
-
-print("_____")
-
-Jt1.product(Jt1.CPTc["AJ"], Jt1.CPTc["AM"])
 
 print(Jt1.CPTc["AJ"])
 
@@ -88,12 +83,6 @@ print(Jt1.CPTc["AJ"])
 print(Jt1.CPTc["AM"])
 print(Jt1.CPTs["A"])
 
-print("_____")
-
-bde.joint_probability()
-print(bde.joint_p)
-
-print("_____")
 
 list = Jt1.find_leafs("AJ")
 print(list)
@@ -105,22 +94,32 @@ for i in range(len(Jt1.clusters)):
 
 print("_____")
 
+sum = bde.joint_probability()
+print(bde.joint_p)
+print(sum)
+
+print("_____")
+
 Jt1.CPTc["AJ"][2][2] = 0
 Jt1.CPTc["AJ"][4][2] = 0
 
-Jt1.distribute_evidence("AJ")
-
-print("_____")
-
-for i in range(len(Jt1.clusters)):
-    print(Jt1.CPTc[Jt1.clusters[i]])
-
-print("_____")
-
 Jt1.collect_evidence("AJ")
 
+print("_____")
+
 for i in range(len(Jt1.clusters)):
     print(Jt1.CPTc[Jt1.clusters[i]])
 
-# t = bde.joint_probability()
-# print(t)
+print("_____")
+
+cpt = bde.marginalize("A", ["B", "J"])
+print(cpt)
+
+ncpt = bde.normalize("A", ["E", "B"])
+print(ncpt)
+# Jt1.distribute_evidence("AJ")
+
+# for i in range(len(Jt1.clusters)):
+#   print(Jt1.CPTc[Jt1.clusters[i]])
+
+# print("_____")

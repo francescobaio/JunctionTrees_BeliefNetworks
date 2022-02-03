@@ -1,8 +1,11 @@
+import decimal
 import math
 import random
 
 import numpy as np
 import python_algorithms.basic.union_find as uf
+from numpy import inf
+import decimal
 
 
 class BeliefNetwork:
@@ -48,13 +51,126 @@ class BeliefNetwork:
                 self.joint_p[k + 1][t] = quoziente % 2
                 quoziente = math.floor(quoziente / 2)
 
-        # for per capire quali nodi non hanno i padri
-        # list -> lista con indici dove sono i nodi nelle joint_p
-        # queue -> nodi
         for i in range(len(self.nodes)):
-            table = JunctionTree.product(self, self.joint_p, self.cpt[self.nodes[i]])
+            JunctionTree.product(self, self.joint_p, self.cpt[self.nodes[i]])
 
+    # sum = 0
+    # for j in range(2 ** len(self.nodes)):
+    #   sum += self.joint_p[j + 1][len(self.nodes)]
 
+    # return sum
+
+    def marginalize(self, variable, evidence):
+
+        copy_jpt = self.joint_p.copy()
+        list = []
+        found = True
+        check = True
+        cpt = np.zeros(((2 ** (len(evidence) + 1)) + 1, len(evidence) + 2))
+
+        cpt[0][0] = self.variables[variable]
+        for j in range(cpt.shape[1] - 2):
+            cpt[0][j + 1] = self.variables[evidence[j]]
+
+        for k in range(2 ** (len(evidence) + 1)):
+            quoziente = k
+            for t in range(len(evidence), -1, -1):
+                cpt[k + 1][t] = quoziente % 2
+                quoziente = math.floor(quoziente / 2)
+
+        for i in range(copy_jpt.shape[1] - 1):
+            for j in range(cpt.shape[1] - 1):
+                if copy_jpt[0][i] == cpt[0][j]:
+                    list.append((i, j))
+
+        sets = uf.UF(copy_jpt.shape[0] - 1)
+        while sets.count() > ((2 ** (len(evidence) + 1))):
+            for i in range(copy_jpt.shape[0] - 2):
+                for y in range(cpt.shape[0] - 1):
+                    for x in range(len(list)):
+                        if copy_jpt[i + 1][list[x][0]] != cpt[y + 1][list[x][1]]:
+                            check = False
+                    if check == True:
+                        cpt[y + 1][cpt.shape[1] - 1] += copy_jpt[i + 1][copy_jpt.shape[1] - 1]
+                    else:
+                        check = True
+
+                for j in range(i + 2, copy_jpt.shape[0]):
+                    for k in range(len(list)):
+                        if copy_jpt[i + 1][list[k][0]] != copy_jpt[j][list[k][0]]:
+                            found = False
+                        # nel caso in cui ho trovato un riga valori uguali negli attributi
+                        # in comune con ts, verifico se non fa parte già del set con la funzione
+                        # connected
+                        # i sets partono da zero
+                    if found == True and not sets.connected(i, j - 1):
+                        sets.union(i, j - 1)
+                        for y in range(cpt.shape[0] - 1):
+                            for x in range(len(list)):
+                                if copy_jpt[i + 1][list[x][0]] != cpt[y + 1][list[x][1]]:
+                                    check = False
+                            if check == True:
+                                cpt[y + 1][cpt.shape[1] - 1] += copy_jpt[j][copy_jpt.shape[1] - 1]
+                            else:
+                                check = True
+                    else:
+                        found = True
+
+    def normalize(self, variable, evidence):
+
+        copy_jpt2 = self.joint_p.copy()
+        cpt_norm = np.zeros(((2 ** len(evidence)) + 1, len(evidence) + 1))
+        check = True
+        found = True
+        list = []
+
+        for j in range(cpt_norm.shape[1] - 1):
+            cpt_norm[0][j] = self.variables[evidence[j]]
+
+        for k in range(2 ** len(evidence)):
+            quoziente = k
+            for t in range(len(evidence) - 1, -1, -1):
+                cpt_norm[k + 1][t] = quoziente % 2
+                quoziente = math.floor(quoziente / 2)
+
+        for i in range(copy_jpt2.shape[1] - 1):
+            for j in range(cpt_norm.shape[1] - 1):
+                if copy_jpt2[0][i] == cpt_norm[0][j]:
+                    list.append((i, j))
+
+        sets = uf.UF(copy_jpt2.shape[0] - 1)
+        while sets.count() > (2 ** (len(evidence))):
+            for i in range(copy_jpt2.shape[0] - 2):
+                for y in range(cpt_norm.shape[0] - 1):
+                    for x in range(len(list)):
+                        if ((cpt_norm[y + 1][-1] != 0) or (
+                                copy_jpt2[i + 1][list[x][0]] != cpt_norm[y + 1][list[x][1]])):
+                            check = False
+                    if check == True:
+                        cpt_norm[y + 1][cpt_norm.shape[1] - 1] += copy_jpt2[i + 1][copy_jpt2.shape[1] - 1]
+                    else:
+                        check = True
+
+                for j in range(i + 2, copy_jpt2.shape[0]):
+                    for k in range(len(list)):
+                        if copy_jpt2[i + 1][list[k][0]] != copy_jpt2[j][list[k][0]]:
+                            found = False
+                    # nel caso in cui ho trovato un riga valori uguali negli attributi
+                    # in comune con ts, verifico se non fa parte già del set con la funzione
+                    # connected
+                    # i sets partono da zero
+                    if found == True and not sets.connected(i, j - 1):
+                        sets.union(i, j - 1)
+                        for y in range(cpt_norm.shape[0] - 1):
+                            for x in range(len(list)):
+                                if copy_jpt2[i + 1][list[x][0]] != cpt_norm[y + 1][list[x][1]]:
+                                    check = False
+                            if check == True:
+                                cpt_norm[y + 1][cpt_norm.shape[1] - 1] += copy_jpt2[j][copy_jpt2.shape[1] - 1]
+                            else:
+                                check = True
+                    else:
+                        found = True
 
 
 class JunctionTree:
@@ -63,6 +179,7 @@ class JunctionTree:
         self.clusters = clusters
         self.separators = separators
         self.beliefNetwork = beliefNetwork
+        decimal.getcontext().prec = 15
         # CPTs e CPTc sono due dizionari che associano rispettivamente la stringa corrispondente al separatore/cluster
         # alla sua CPT
         self.CPTs = {}
@@ -81,7 +198,8 @@ class JunctionTree:
                     quoziente = math.floor(quoziente / 2)
 
         for i in range(len(self.separators)):
-            self.CPTs[self.separators[i]] = np.zeros((2 ** len(self.separators[i]) + 1, len(self.separators[i]) + 1))
+            self.CPTs[self.separators[i]] = np.zeros((2 ** len(self.separators[i]) + 1, len(self.separators[i]) + 1),
+                                                     dtype=decimal.Decimal)
             for j in range(len(self.separators[i])):
                 self.CPTs[self.separators[i]][0][j] = beliefNetwork.variables[self.separators[i][j]]
             for k in range(2 ** len(self.separators[i])):
@@ -117,10 +235,15 @@ class JunctionTree:
                     else:
                         found = True
 
+        for i in range(len(self.clusters)):
+            for j in range(2 ** len(self.clusters[i])):
+                self.CPTc[self.clusters[i]][j + 1][-1] /= (len(self.clusters[i]))
+
     def product(self, tv, ts):
         # Trovo le colonne delle variabili in comune tra i due cluster
         # list è una variabile che contiene gli indici delle colonne delle variabili in comune
         list = []
+        decimal.getcontext().prec = 20
         # found è un var booleana che mi dice se tutta la riga della prima tabella ha negli
         # attributi in comune gli stessi valori di una delle tuple della seconda tabella
         found = True
@@ -135,7 +258,7 @@ class JunctionTree:
                     if tv[k + 1][list[t][0]] != ts[y + 1][list[t][1]]:
                         found = False
                 if found == True:
-                    tv[k + 1][tv.shape[1] - 1] = tv[k + 1][tv.shape[1] - 1] * ts[y + 1][ts.shape[1] - 1]
+                    tv[k + 1][tv.shape[1] - 1] = (tv[k + 1][tv.shape[1] - 1] * ts[y + 1][ts.shape[1] - 1])
                 else:
                     found = True
 
@@ -155,8 +278,9 @@ class JunctionTree:
                     if tv[k + 1][list[t][0]] != ts[y + 1][list[t][1]]:
                         found = False
                 if found == True:
-                    if round(tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]) != 0:
-                        tv[k + 1][tv.shape[1] - 1] = tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]
+                    if (tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]) != inf:
+                        if round(tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]) != 0:
+                            tv[k + 1][tv.shape[1] - 1] = tv[k + 1][tv.shape[1] - 1] / ts[y + 1][ts.shape[1] - 1]
                 else:
                     found = True
 
@@ -193,7 +317,7 @@ class JunctionTree:
                             if check == True:
                                 ts[y + 1][ts.shape[1] - 1] = tv[i + 1][tv.shape[1] - 1] + tv[j][tv.shape[1] - 1]
                             else:
-                                check = False
+                                check = True
                     else:
                         found = True
 
@@ -272,20 +396,35 @@ class JunctionTree:
     def collect_evidence(self, root):
 
         list = self.find_leafs(root)
+        nodes = []
+        edges = []
+        queue = []
+        for i in range(len(self.edges)):
+            queue.append(self.edges[i])
 
-        for i in range(len(list)):
-            while list[i] != root:
-                for j in range(len(self.edges)):
-                    if list[i] in self.edges[j]:
-                        if list[i] == self.edges[j][0]:
-                            self.absorption(self.CPTc[list[i]], self.CPTs[self.edges[j][1]],
-                                            self.CPTc[self.edges[j][2]])
-                            list[i] = self.edges[j][2]
-                        else:
-                            self.absorption(self.CPTc[self.edges[j][0]], self.CPTs[self.edges[j][1]],
-                                            self.CPTc[list[i]])
+        while len(queue) > 0:
+            for i in range(len(list)):
+                while root not in nodes:
+                    noedges = self.find_edges(list[i])
+                    for k in range(len(noedges)):
+                        if noedges[k] in queue:
+                            edges.append(noedges[k])
 
-                            list[i] = self.edges[j][0]
+                    for j in range(len(edges)):
+                        if list[i] in edges[j]:
+                            if list[i] == edges[j][0]:
+                                self.absorption(self.CPTc[list[i]], self.CPTs[edges[j][1]], self.CPTc[edges[j][2]])
+                                if edges[j][2] not in list:
+                                    nodes.append(edges[j][2])
+                                queue.remove(edges[j])
+                            else:
+                                self.absorption(self.CPTc[edges[j][0]], self.CPTs[edges[j][1]], self.CPTc[list[i]])
+                                if edges[j][0] not in list:
+                                    nodes.append(edges[j][0])
+                                queue.remove(edges[j])
+
+                edges.clear()
+                nodes.clear()
 
     def find_edges(self, node):
 
@@ -294,5 +433,18 @@ class JunctionTree:
         for i in range(len(self.edges)):
             if node in self.edges[i]:
                 list.append(self.edges[i])
+
+        return list
+
+    def find_neighbours(self, node):
+
+        list = []
+
+        for i in range(len(self.edges)):
+            if node in self.edges[i]:
+                if node == self.edges[i][0]:
+                    list.append(self.edges[i][2])
+                else:
+                    list.append(self.edges[i][0])
 
         return list
