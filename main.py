@@ -23,7 +23,7 @@ if __name__ == '__main__':
 bde = I.BeliefNetwork(["B", "E", "A", "J", "M"], {"B": [], "E": [], "A": ["E", "B"], "J": ["A"],
                                                   "M": ["A"]}, {"B": [0.99, 0.01], "E": [0.98, 0.02],
                                                                 "A":
-                                                                    [0.999, 0.71, 0.06, 0.05, 0.001, 0.29, 0.94, 0.95],
+                                                                    [0.999, 0.06, 0.71, 0.05, 0.001, 0.94, 0.29, 0.95],
                                                                 "J": [0.95, 0.1, 0.05, 0.9],
                                                                 "M": [0.99, 0.3, 0.01, 0.7]})
 
@@ -72,17 +72,6 @@ print("_____")
 for i in range(len(Jt1.separators)):
     print(Jt1.CPTs[Jt1.separators[i]])
 
-print("-----")
-
-Jt1.absorption(Jt1.CPTc["AJ"], Jt1.CPTs["A"], Jt1.CPTc["AM"])
-
-print(Jt1.CPTc["AJ"])
-print(Jt1.CPTc["AM"])
-print(Jt1.CPTs["A"])
-
-list = Jt1.find_leafs("AJ")
-print(list)
-
 print("_____")
 
 for i in range(len(Jt1.clusters)):
@@ -108,6 +97,22 @@ print("_____")
 
 cpt = bde.calculate_cp("B", ["J", "M"], {"J": 1, "M": 0})
 print(cpt)
+
+CPT1 = bde.marginalize("B", cpt)
+print(CPT1)
+
+print("_____")
+
+Jt1.give_evidence(["J", "M"], {"J": 1, "M": 0})
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+Jt1.collect_evidence("AJ")
+Jt1.distribute_evidence("AJ")
+
+bcpt = Jt1.marginalize("B")
+print(bcpt)
 
 # B = true e J = true
 

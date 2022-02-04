@@ -60,13 +60,13 @@ class BeliefNetwork:
         for j in range(2 ** len(self.nodes)):
             sum += self.joint_p[j + 1][len(self.nodes)]
 
-        for i in range(self.joint_p.shape[0] - 1):
-            self.joint_p[i + 1][-1] /= sum
+        # for i in range(self.joint_p.shape[0] - 1):
+        #   self.joint_p[i + 1][-1] /= sum
 
-        somma = 0
-        for j in range(2 ** len(self.nodes)):
-            somma += self.joint_p[j + 1][len(self.nodes)]
-        return somma
+        # somma = 0
+        # for j in range(2 ** len(self.nodes)):
+        # somma += self.joint_p[j + 1][len(self.nodes)]
+        return sum
 
     def calculate_cp(self, variable, evidence, values):
 
@@ -450,3 +450,64 @@ class JunctionTree:
                     list.append(self.edges[i][0])
 
         return list
+
+    def give_evidence(self, evidence, values):
+
+        for i in range(len(evidence)):
+            for j in range(len(self.clusters)):
+                if self.clusters[j].find(evidence[i]) == 1:
+                    for k in range(self.CPTc[self.clusters[j]].shape[1] - 1):
+                        if self.CPTc[self.clusters[j]][0][k] == self.beliefNetwork.variables[evidence[i]]:
+                            index = k
+
+                    for t in range(self.CPTc[self.clusters[j]].shape[0] - 1):
+                        if self.CPTc[self.clusters[j]][t + 1][k] != values[evidence[i]]:
+                            self.CPTc[self.clusters[j]][t + 1][-1] = 0
+
+    def marginalize(self, variabile):
+
+        check = True
+        found = True
+        chk = True
+
+        vcpt = np.zeros((3, 2))
+        vcpt[0][0] = self.beliefNetwork.variables[variabile]
+        vcpt[2][0] = 1
+        index = 0
+
+        if chk == True:
+            for i in range(len(self.clusters)):
+                if self.clusters[i].find(variabile) == 1:
+                    chk = False
+                    cpt = self.CPTc[self.clusters[i]].copy()
+                    for k in range(cpt.shape[1] - 1):
+                        if cpt[0][k] == vcpt[0][0]:
+                            index = k
+                    sets = uf.UF(cpt.shape[0] - 1)
+                    while sets.count() > 2:
+                        for j in range(cpt.shape[0] - 2):
+                            for t in range(vcpt.shape[0] - 1):
+                                if ((vcpt[t + 1][-1] != 0) or (cpt[j + 1][index] != vcpt[t + 1][0])):
+                                    check = False
+
+                                if check == True:
+                                    vcpt[t + 1][-1] = cpt[j + 1][-1]
+                                else:
+                                    check = True
+
+                            for k in range(j + 2, cpt.shape[0]):
+                                if cpt[j + 1][index] != cpt[k][index]:
+                                    found = False
+                                if found == True and not sets.connected(j, k - 1):
+                                    sets.union(j, k - 1)
+                                    for y in range(vcpt.shape[0] - 1):
+                                        if cpt[j + 1][index] != vcpt[y + 1][0]:
+                                            check = False
+                                        if check == True:
+                                            vcpt[y + 1][-1] += cpt[k][-1]
+                                        else:
+                                            check = True
+                                else:
+                                    found = True
+
+        return vcpt
