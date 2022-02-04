@@ -68,7 +68,7 @@ class BeliefNetwork:
             somma += self.joint_p[j + 1][len(self.nodes)]
         return somma
 
-    def calculate_cp(self, variable, evidence):
+    def calculate_cp(self, variable, evidence, values):
 
         list = []
         list.append(variable)
@@ -76,16 +76,18 @@ class BeliefNetwork:
         for i in range(len(evidence)):
             list.append(evidence[i])
 
-        cpt = self.marginalize(list)
-        cpt_norm = self.marginalize(evidence)
+        copy_jpt = self.joint_p.copy()
+        self.give_evidence(variable, evidence, values, copy_jpt)
+
+        cpt = self.marginalize(list, copy_jpt)
+        cpt_norm = self.marginalize(evidence, copy_jpt)
 
         JunctionTree.division(self, cpt, cpt_norm)
 
         return cpt
 
-    def marginalize(self, variables):
+    def marginalize(self, variables, copy_jpt):
 
-        copy_jpt = self.joint_p.copy()
         list = []
         found = True
         check = True
@@ -139,6 +141,22 @@ class BeliefNetwork:
                     else:
                         found = True
         return cpt
+
+    def give_evidence(self, variable, evidence, values, copy_jpt):
+
+        list = []
+        check = True
+
+        for i in range(copy_jpt.shape[1] - 1):
+            for j in range(len(evidence)):
+                if copy_jpt[0][i] == self.variables[evidence[j]]:
+                    list.append((i, j))
+
+        for i in range(copy_jpt.shape[0] - 1):
+            for k in range(len(list)):
+                if copy_jpt[i + 1][list[k][0]] != values[evidence[list[k][1]]]:
+                    copy_jpt[i + 1][-1] = 0
+
 
 class JunctionTree:
     def __init__(self, clusters, separators, egdes, beliefNetwork):

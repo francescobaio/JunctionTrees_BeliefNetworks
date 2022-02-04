@@ -23,9 +23,9 @@ if __name__ == '__main__':
 bde = I.BeliefNetwork(["B", "E", "A", "J", "M"], {"B": [], "E": [], "A": ["E", "B"], "J": ["A"],
                                                   "M": ["A"]}, {"B": [0.99, 0.01], "E": [0.98, 0.02],
                                                                 "A":
-                                                                    [0.999, 0.001, 0.71, 0.29, 0.06, 0.94, 0.05, 0.95],
-                                                                "J": [0.95, 0.05, 0.1, 0.9],
-                                                                "M": [0.99, 0.01, 0.3, 0.7]})
+                                                                    [0.999, 0.71, 0.06, 0.05, 0.001, 0.29, 0.94, 0.95],
+                                                                "J": [0.95, 0.1, 0.05, 0.9],
+                                                                "M": [0.99, 0.3, 0.01, 0.7]})
 
 # Memorizzo la rete simple.bn
 
@@ -62,7 +62,6 @@ print("____")
 
 Jt1.inizialization()
 
-
 print("____")
 
 for i in range(len(Jt1.clusters)):
@@ -81,7 +80,6 @@ print(Jt1.CPTc["AJ"])
 print(Jt1.CPTc["AM"])
 print(Jt1.CPTs["A"])
 
-
 list = Jt1.find_leafs("AJ")
 print(list)
 
@@ -98,10 +96,8 @@ print(sum)
 
 print("_____")
 
-Jt1.CPTc["AJ"][2][2] = 0
-Jt1.CPTc["AJ"][4][2] = 0
-
-Jt1.collect_evidence("AJ")
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
 
 print("_____")
 
@@ -110,18 +106,45 @@ for i in range(len(Jt1.clusters)):
 
 print("_____")
 
-Jt1.distribute_evidence("AJ")
-
-for i in range(len(Jt1.clusters)):
-    print(Jt1.CPTc[Jt1.clusters[i]])
-
-print("_____")
-
-cpt = bde.calculate_cp("A", ["B", "J"])
+cpt = bde.calculate_cp("B", ["J", "M"], {"J": 1, "M": 0})
 print(cpt)
+
+# B = true e J = true
+
+"""
+print("_____")
+
+Jt1.CPTc["ABE"][1][3] = 0
+Jt1.CPTc["ABE"][2][3] = 0
+Jt1.CPTc["ABE"][5][3] = 0
+Jt1.CPTc["ABE"][6][3] = 0
+Jt1.CPTc["AJ"][1][2] = 0
+Jt1.CPTc["AJ"][3][2] = 0
+
+print("_____")
+
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+print("_____")
+Jt1.collect_evidence("ABE")
+
+print("_____")
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+print("_____")
+Jt1.distribute_evidence("ABE")
+
+print("_____")
+for i in range(len(Jt1.clusters)):
+    print(Jt1.CPTc[Jt1.clusters[i]])
+
+print("_____")
 
 # cpt2 = bde.marginalize("J",["A"])
 # print(cpt2)
 
 
 # print("_____")
+"""
