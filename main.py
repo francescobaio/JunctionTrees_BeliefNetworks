@@ -20,10 +20,10 @@ if __name__ == '__main__':
 
 # Memorizzo la rete del file .bn , abrrevio il nome dei nodi alla iniziale
 
-bde = I.BeliefNetwork(["B", "E", "A", "J", "M"], {"B": [], "E": [], "A": ["E", "B"], "J": ["A"],
+bde = I.BeliefNetwork(["B", "E", "A", "J", "M"], {"B": [], "E": [], "A": ["B", "E"], "J": ["A"],
                                                   "M": ["A"]}, {"B": [0.99, 0.01], "E": [0.98, 0.02],
                                                                 "A":
-                                                                    [0.999, 0.06, 0.71, 0.05, 0.001, 0.94, 0.29, 0.95],
+                                                                    [0.999, 0.71, 0.06, 0.05, 0.001, 0.29, 0.94, 0.95],
                                                                 "J": [0.95, 0.1, 0.05, 0.9],
                                                                 "M": [0.99, 0.3, 0.01, 0.7]})
 
@@ -35,7 +35,9 @@ simple = I.BeliefNetwork(["A", "B", "C"], {"A": [], "B": ["A"], "C": []},
 # Memorizzo il Junction Tree del file bde_test.bn , https://github.com/francescobaio/Elaborato_AI/blob/main/JunctionTree%20EarthQuake.bn.png
 
 
-Jt1 = I.JunctionTree(["AJ", "AM", "ABE"], ["A"], [("AJ", "A", "AM"), ("ABE", "A", "AJ"), ("ABE", "A", "AM")], bde)
+Jt1 = I.JunctionTree(["AJ", "AM", "ABE"], ["A"],
+                     [("AJ", "A", "AM"), ("AM", "A", "AJ"), ("ABE", "A", "AM"), ("AM", "A", "ABE"), ("ABE", "A", "AJ"),
+                      ("AJ", "A", "ABE")], bde)
 
 # Memorizzo il Junction Tree del file simple_bn , https://github.com/francescobaio/Elaborato_AI/blob/main/JunctionTree%20simple.bn.png
 
@@ -108,13 +110,26 @@ Jt1.give_evidence(["J", "M"], {"J": 1, "M": 0})
 for i in range(len(Jt1.clusters)):
     print(Jt1.CPTc[Jt1.clusters[i]])
 
-Jt1.collect_evidence("AJ")
-Jt1.distribute_evidence("AJ")
+Jt1.collect_evidence("ABE")
+
+Jt1.distribute_evidence("ABE")
 
 bcpt = Jt1.marginalize("B")
 print(bcpt)
 
+# Jt1.give_evidence(["J", "M"], {"J": 1, "M": 0})
+
+# for i in range(len(Jt1.clusters)):
+#   print(Jt1.CPTc[Jt1.clusters[i]])
+
+# Jt1.collect_evidence("AJ")
+# Jt1.distribute_evidence("AJ")
+
+# bcpt = Jt1.marginalize("B")
+# print(bcpt)
+
 # B = true e J = true
+
 
 """
 print("_____")

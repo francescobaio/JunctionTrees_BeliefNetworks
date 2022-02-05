@@ -1,9 +1,9 @@
 import Inference as I
 
 simple = I.BeliefNetwork(["A", "B", "C"], {"A": [], "B": ["A"], "C": ["B"]},
-                         {"A": [0.3, 0.7], "B": [0.4, 0.6, 0.1, 0.9], "C": [0.4, 0.6, 0.1, 0.9]})
+                         {"A": [0.3, 0.7], "B": [0.4, 0.1, 0.6, 0.9], "C": [0.4, 0.1, 0.6, 0.9]})
 
-Jt2 = I.JunctionTree(["AB", "BC"], ["B"], [("AB", "B", "BC")], simple)
+Jt2 = I.JunctionTree(["AB", "BC"], ["B"], [("AB", "B", "BC"), ("BC", "B", "AB")], simple)
 
 for i in range(len(Jt2.clusters)):
     print(Jt2.CPTc[Jt2.clusters[i]])
@@ -19,8 +19,30 @@ sum = simple.joint_probability()
 print(simple.joint_p)
 print(sum)
 
-cpt = simple.calculate_cp("B", ["A"])
+cpt = simple.calculate_cp("B", ["A"], {"A": 1})
 print(cpt)
+
+cpt2 = simple.marginalize("B", cpt)
+print(cpt2)
+
+print("____")
+
+Jt2.inizialization()
+
+for i in range(len(Jt2.clusters)):
+    print(Jt2.CPTc[Jt2.clusters[i]])
+
+Jt2.give_evidence(["A"], {"A": 1})
+
+for i in range(len(Jt2.clusters)):
+    print(Jt2.CPTc[Jt2.clusters[i]])
+
+Jt2.collect_evidence("AB")
+
+Jt2.distribute_evidence("AB")
+
+bcpt = Jt2.marginalize("B")
+print(bcpt)
 
 """"
 

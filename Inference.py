@@ -210,7 +210,7 @@ class JunctionTree:
 
         found = True
 
-        for i in range(len(self.beliefNetwork.variables)):
+        for i in range(len(self.beliefNetwork.nodes)):
             for j in range(len(self.clusters)):
                 if self.clusters[j].find(self.beliefNetwork.nodes[i]) != -1:
                     for k in range(len(self.beliefNetwork.parents[self.beliefNetwork.nodes[i]])):
@@ -219,17 +219,11 @@ class JunctionTree:
                     if found == True:
                         self.product(self.CPTc[self.clusters[j]],
                                      self.beliefNetwork.cpt[self.beliefNetwork.nodes[i]])
-                        break
+
                     else:
                         found = True
 
-        for i in range(len(self.clusters)):
-            sum = 0
-            for j in range(2 ** len(self.clusters[i])):
-                sum += self.CPTc[self.clusters[i]][j + 1][-1]
 
-            for k in range(2 ** len(self.clusters[i])):
-                self.CPTc[self.clusters[i]][k + 1][-1] /= sum
 
     def product(self, tv, ts):
         # Trovo le colonne delle variabili in comune tra i due cluster
@@ -281,8 +275,10 @@ class JunctionTree:
         # uso il metodo copy di Numpy per creare una nuova tabella con i valori di ts
         ts_new = ts.copy()
         list = []
+
         found = True
         check = True
+
         for i in range(tv.shape[1] - 1):
             for j in range(ts.shape[1] - 1):
                 if tv[0][i] == ts[0][j]:
@@ -290,15 +286,20 @@ class JunctionTree:
         # utilizzo la funzione Union Find per creare dei gruppi nelle righe di tv
         # all'inizio sets contiene tanti gruppi quanti sono le righe di UF
         sets = uf.UF(tv.shape[0] - 1)
+        coda = []
+        for i in range(tv.shape[0] - 1):
+            coda.append(0)
+
         while sets.count() > ts.shape[0] - 1:
             # itero prendendo una riga della tabella e tutte le successive sulle variabili(colonne) in comune
             for i in range(tv.shape[0] - 2):
                 for y in range(ts.shape[0] - 1):
                     for x in range(len(list)):
-                        if ((tv[y + 1][-1] != 0) or (tv[i + 1][list[x][0]] != ts[y + 1][list[x][1]])):
+                        if ((coda[i] != 0) or (tv[i + 1][list[x][0]] != ts[y + 1][list[x][1]])):
                             check = False
                     if check == True:
                         ts[y + 1][ts.shape[1] - 1] = tv[i + 1][tv.shape[1] - 1]
+                        coda[i] = coda[i] + 1
                     else:
                         check = True
 
@@ -318,6 +319,7 @@ class JunctionTree:
                                     check = False
                             if check == True:
                                 ts[y + 1][ts.shape[1] - 1] += tv[j][tv.shape[1] - 1]
+                                coda[j - 1] = coda[j - 1] + 1
                             else:
                                 check = True
                     else:
@@ -328,7 +330,10 @@ class JunctionTree:
 
     def distribute_evidence(self, root):
         # ricevo un nodo arbitrario,lo considero come la radice dell'albero
-        queue = self.edges
+        queue = []
+        for i in range(len(self.edges)):
+            if self.edges[i][0] == root:
+                queue.append(self.edges[i])
 
         list = []
         list.append(root)
@@ -401,8 +406,10 @@ class JunctionTree:
         nodes = []
         edges = []
         queue = []
+
         for i in range(len(self.edges)):
-            queue.append(self.edges[i])
+            if self.edges[i][2] == root:
+                queue.append(self.edges[i])
 
         while len(queue) > 0:
             for i in range(len(list)):
