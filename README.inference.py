@@ -19,7 +19,11 @@ Metodi della classe e loro funzionalità :
                                                              
 - CALCULATE_JP : metodo all'interno del quale attraverso il metodo MARGINALIZE si calcola sia la marginalizzazione della probabilità congiunta rispetto all'unione dell'insieme
                  dato dalla variabile e la lista delle variabili su cui si fa evidenza. Calcolata le due cpt marginalizzate si usa il metodo DIVISION della classe Junction Tree 
-                 che applica una divisione nell'algebra delle belief tables.                                                                                               
+                 che applica una divisione nell'algebra delle belief tables.
+                                                                                                                
+     
+-- GIVE_EVIDENCE : questo metodo serve a poter dare evidenza andando a porre a zero tutte le righe della jpt che non hanno risultati concordi all'evidenza data.                                                                                                                
+                                                                                                                
                                                                                                                 
 -------------------------------------------------------------------------------------------------------------                                                                                                         
                                                                                                               
@@ -78,8 +82,10 @@ Metodi finalizzati alla propagazione dei belief :
                                                                                                                 
 
   
+- GIVE_EVIDENCE : questo metodo serve a poter dare evidenza andando a porre a zero tutte le righe della jpt che non hanno risultati concordi all'evidenza data. 
                                                                                                                 
-                                                                                                             -
+                                                                                                       
+ - MARGINALIZE : marginalizza una CPTc di un cluster e trova come risultato una cpt associata a una variabile appartenente al cluster stesso.                                                                                                            -
                                                                                                                 
                                                                                                                 
                                                                                                                 
