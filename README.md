@@ -25,6 +25,7 @@ The functionality of the module has been rigorously tested on two example networ
 
 Additionally, there is an extra folder that provides insights into the structure of the Junction Trees associated with these simple networks.
 
+Feel free to explore the code, documentation, and test cases provided in this repository. [Inference.py](https://github.com/francescobaio/junctionTrees_beliefNetworks/blob/main/README.inference.py),[Inference.py]
 
 
 
